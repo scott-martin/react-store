@@ -1,0 +1,23 @@
+{
+  "name": "react-store",
+  "version": "0.0.1",
+  "description": "A redux-like store hook for React",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scott-martin/react-store.git"
+  },
+  "author": "Scott Martin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scott-martin/react-store/issues"
+  },
+  "homepage": "https://github.com/scott-martin/react-store#readme",
+  "dependencies": {
+    "@types/react": "^16.9.17",
+    "react": "^16.12.0"
+  }
+}
