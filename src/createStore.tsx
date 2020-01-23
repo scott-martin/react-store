@@ -1,6 +1,7 @@
 import React, { 
-  createContext, useContext, Reducer, ReducerState, ReducerAction 
+  createContext, useContext, Reducer, ReducerState, ReducerAction, useRef, useEffect 
 } from 'react';
+import shallowEqual from 'shallowequal';
 import { useDevToolsReducer } from './useDevtoolsReducer';
 
 /**
@@ -20,7 +21,7 @@ export const createStore = <R extends Reducer<any, any>>(
     
   const StoreProvider: React.FC<any> = (props) => {  
     const [state, dispatch] = useDevToolsReducer(reducer, initialState, storeName);
-  
+
     return (
       <DispatchContext.Provider value={dispatch}>
         <StoreContext.Provider value={state}>{props.children}</StoreContext.Provider>
@@ -28,9 +29,46 @@ export const createStore = <R extends Reducer<any, any>>(
     );
   };
 
+  type Selector<T> = (state: ReducerState<R>) => T;
+  type UseSelector = <T>(selector: Selector<T>) => T;
+
+  /**
+   * Allows you to select slices of your state in your component
+   * It is best to keep this in a container function, because any
+   * updates to the global state will cause a rerender of your
+   * component.
+   */
+  const useSelector: UseSelector = (selector) => {
+    type T = ReturnType<typeof selector>;
+    const store = useStore();
+    const lastValueRef = useRef<T>();
+    const lastSelectorRef = useRef<typeof selector>();
+    let value: T;
+
+    if (selector !== lastSelectorRef.current) {
+      const newValue = selector(store);
+      const lastValue = lastValueRef.current;
+      if (lastValue) {
+        value = shallowEqual(lastValue, newValue) ? lastValue : newValue;
+      } else {
+        value = newValue;
+      }
+    } else {
+      value = lastValueRef.current as T;
+    }
+
+    useEffect(() => {
+      lastValueRef.current = value;
+      lastSelectorRef.current = selector;
+    });
+
+    return value;
+  };
+
   return {
-    useStore,
+    useSelector,
     useDispatch,
+    useStore,
     StoreProvider, 
     StoreContext,
     DispatchContext
